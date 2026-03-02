@@ -22,15 +22,33 @@ const db = drizzle(pool);
 async function autoMigrate() {
   const client = await pool.connect();
   try {
+    // Check if schema needs recreation (missing columns from initial bad migration)
+    const { rows: cols } = await client.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_name = 'product' AND column_name = 'imageData'`
+    );
+    if (cols.length === 0) {
+      console.log('Schema mismatch detected, recreating tables...');
+      await client.query(`
+        DROP TABLE IF EXISTS leaflet_file CASCADE;
+        DROP TABLE IF EXISTS product_image CASCADE;
+        DROP TABLE IF EXISTS product_market CASCADE;
+        DROP TABLE IF EXISTS product_strength CASCADE;
+        DROP TABLE IF EXISTS audit CASCADE;
+        DROP TABLE IF EXISTS leaflet CASCADE;
+        DROP TABLE IF EXISTS batch CASCADE;
+        DROP TABLE IF EXISTS product CASCADE;
+      `);
+    }
     await client.query(`
       CREATE TABLE IF NOT EXISTS product (
         "productCode" TEXT PRIMARY KEY,
-        "inventedName" TEXT,
+        "inventedName" TEXT NOT NULL,
         "nameMedicinalProduct" TEXT,
         "internalMaterialCode" TEXT,
         "productRecall" BOOLEAN DEFAULT false,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
+        "imageData" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
         "createdBy" TEXT,
         "updatedBy" TEXT,
         "version" INTEGER DEFAULT 1,
@@ -38,13 +56,17 @@ async function autoMigrate() {
       );
       CREATE TABLE IF NOT EXISTS batch (
         id TEXT PRIMARY KEY,
-        "productCode" TEXT,
-        "batchNumber" TEXT,
+        "productCode" TEXT NOT NULL,
+        "batchNumber" TEXT NOT NULL,
         "expiryDate" TEXT,
+        "importLicenseNumber" TEXT,
+        "dateOfManufacturing" TEXT,
         "manufacturerName" TEXT,
+        "manufacturerAddress" JSONB,
+        "packagingSiteName" TEXT,
         "batchRecall" BOOLEAN DEFAULT false,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
         "createdBy" TEXT,
         "updatedBy" TEXT,
         "version" INTEGER DEFAULT 1,
@@ -52,14 +74,14 @@ async function autoMigrate() {
       );
       CREATE TABLE IF NOT EXISTS leaflet (
         id TEXT PRIMARY KEY,
-        "productCode" TEXT,
+        "productCode" TEXT NOT NULL,
         "batchNumber" TEXT,
-        "leafletType" TEXT,
-        lang TEXT,
+        "leafletType" TEXT NOT NULL,
+        lang TEXT NOT NULL,
         "epiMarket" TEXT,
         "xmlFileContent" TEXT,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
         "createdBy" TEXT,
         "updatedBy" TEXT,
         "version" INTEGER DEFAULT 1,
@@ -72,21 +94,21 @@ async function autoMigrate() {
         model TEXT,
         transaction TEXT,
         action TEXT,
-        diffs TEXT,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
-        "createdBy" TEXT,
-        "updatedBy" TEXT,
-        "version" INTEGER DEFAULT 1,
-        "owner" TEXT
+        diffs JSONB,
+        "owner" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
+        "version" INTEGER DEFAULT 1
       );
       CREATE TABLE IF NOT EXISTS product_strength (
         id SERIAL PRIMARY KEY,
-        "productCode" TEXT,
+        uuid TEXT,
+        "productCode" TEXT NOT NULL,
         strength TEXT,
         substance TEXT,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
+        "legalEntityName" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
         "createdBy" TEXT,
         "updatedBy" TEXT,
         "version" INTEGER DEFAULT 1,
@@ -94,12 +116,14 @@ async function autoMigrate() {
       );
       CREATE TABLE IF NOT EXISTS product_market (
         id SERIAL PRIMARY KEY,
-        "productCode" TEXT,
         "marketId" TEXT,
+        "productCode" TEXT NOT NULL,
         "nationalCode" TEXT,
         "mahName" TEXT,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
+        "legalEntityName" TEXT,
+        "mahAddress" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
         "createdBy" TEXT,
         "updatedBy" TEXT,
         "version" INTEGER DEFAULT 1,
@@ -107,10 +131,10 @@ async function autoMigrate() {
       );
       CREATE TABLE IF NOT EXISTS product_image (
         id SERIAL PRIMARY KEY,
-        "productCode" TEXT,
+        "productCode" TEXT NOT NULL,
         content TEXT,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
         "createdBy" TEXT,
         "updatedBy" TEXT,
         "version" INTEGER DEFAULT 1,
@@ -118,11 +142,11 @@ async function autoMigrate() {
       );
       CREATE TABLE IF NOT EXISTS leaflet_file (
         id SERIAL PRIMARY KEY,
-        "leafletId" TEXT,
+        "leafletId" TEXT NOT NULL,
         content TEXT,
         filename TEXT,
-        "createdAt" TEXT,
-        "updatedAt" TEXT,
+        "createdAt" TIMESTAMP DEFAULT now(),
+        "updatedAt" TIMESTAMP DEFAULT now(),
         "createdBy" TEXT,
         "updatedBy" TEXT,
         "version" INTEGER DEFAULT 1,
