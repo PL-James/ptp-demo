@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ptp_demo
+      POSTGRES_USER: ptp
+      POSTGRES_PASSWORD: ptp_demo_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ptp -d ptp_demo"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://ptp:ptp_demo_pass@db:5432/ptp_demo
+      PORT: "3000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      secrets:
+        - npmtoken
+    environment:
+      ENV: demo
+      PTP__HOST: "localhost:3000"
+      PTP__PROTOCOL: http
+      KEYCLOAK__HOST: ""
+      KEYCLOAK__HOST_PROTOCOL: ""
+      KEYCLOAK__CLIENT_ID: ""
+      KEYCLOAK__REALM: ""
+    ports:
+      - "8080:80"
+    depends_on:
+      - server
+
+secrets:
+  npmtoken:
+    file: .npmtoken
+
+volumes:
+  pgdata:

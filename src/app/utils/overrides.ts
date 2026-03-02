@@ -12,13 +12,13 @@ import { AxiosFlags, AxiosFlavour, AxiosHttpAdapter, HttpConfig } from '@decaf-t
 import { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { getDemoResponse } from './demo-data';
 
-// DEMO MODE flag — set to true to intercept all HTTP requests with mock data
-const DEMO_MODE = true;
+// DEMO MODE flag — set to false to use PostgreSQL backend instead of mock data
+const DEMO_MODE = false;
 const FABRIC_FLAVOUR = 'hlf-fabric';
 
 export class DecafAxiosHttpAdapter extends AxiosHttpAdapter {
   constructor(config: HttpConfig, alias: string = AxiosFlavour) {
-    super({ eventsListenerPath: DEMO_MODE ? '/demo-events' : '/events', ...config }, DEMO_MODE ? FABRIC_FLAVOUR : AxiosFlavour);
+    super({ eventsListenerPath: '/events', ...config }, FABRIC_FLAVOUR);
   }
 
   token?: string;
@@ -131,7 +131,8 @@ export class DecafAxiosHttpAdapter extends AxiosHttpAdapter {
       );
     }
     if (!res.body && res.data) {
-      res.body = { data: JSON.parse(res.data) };
+      const parsed = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+      res.body = { data: parsed };
     }
 
     res = await super.parseResponse(clazz, method, res);

@@ -13,7 +13,7 @@ const env = path.join(__dirname, '../src/assets/env.js');
 
 const content = sample.replace(/\$\{([A-Z0-9_]+)\}/g, (match, varName) => {
   const value = process.env[varName];
-  if (envFile.includes('local')) {
+  if (envFile.includes('local') || envFile.includes('demo')) {
     if (varName.includes('KEYCLOAK')) {
       return '';
     }
