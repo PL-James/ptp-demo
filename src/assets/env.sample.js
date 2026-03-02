@@ -9,7 +9,7 @@
   });
 
   const env = {
-    app: "EW Frontend",
+    app: "AstraLabel Core",
     env: "${ENV}",
     ptp: {
       host: "${PTP__HOST}",

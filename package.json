@@ -1,7 +1,7 @@
 {
   "name": "@pharmaledgerassoc/ptp-frontend-ew",
   "version": "0.0.4",
-  "description": "PTP Frontend EW",
+  "description": "AstraLabel Core",
   "scripts": {
     "do-install": "NPM_TOKEN=$(cat .npmtoken) npm install",
     "start": "npm run patch-env:local && npx rimraf .angular && ng serve --port=8130 --configuration development",

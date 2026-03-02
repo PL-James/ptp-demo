@@ -9,7 +9,7 @@
   });
 
   const env = {
-    app: "EW Frontend",
+    app: "AstraLabel Core",
     env: "demo",
     ptp: {
       host: "localhost:3000",

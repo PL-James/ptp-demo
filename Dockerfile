@@ -16,4 +16,4 @@ EXPOSE 80
 
 CMD ["/bin/sh", "-c", "export KEYCLOAK__HOST='' KEYCLOAK__HOST_PROTOCOL='' KEYCLOAK__CLIENT_ID='' KEYCLOAK__REALM='' && envsubst < /usr/share/nginx/html/assets/env.sample.js > /usr/share/nginx/html/assets/env.js && sed -i \"s/listen       80/listen       ${PORT:-80}/g\" /etc/nginx/conf.d/default.conf && sed -i \"s/listen  \\[::\\]:80/listen  [::]:${PORT:-80}/g\" /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"]
 
-LABEL name="PTP Enterprise Wallet Frontend" description="The Frontend for PTP Enterprise Wallet"
+LABEL name="AstraLabel Core" description="AstraLabel Core Demo Frontend"

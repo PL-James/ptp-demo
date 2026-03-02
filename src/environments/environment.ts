@@ -5,7 +5,7 @@ import { LoggedEnvironment, LogLevel } from '@decaf-ts/logging';
 import { EWConfig } from './types';
 const env: EWConfig = (window as Record<string, any>)['ENV'] || {};
 const ewConfig: EWConfig = {
-  app: env.app || 'EW Frontend',
+  app: env.app || 'AstraLabel Core',
   env: env.env || 'development',
 
   ptp: {
