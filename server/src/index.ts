@@ -18,6 +18,132 @@ if (!DATABASE_URL) {
 const pool = new Pool({ connectionString: DATABASE_URL });
 const db = drizzle(pool);
 
+// Auto-migrate: create tables if they don't exist
+async function autoMigrate() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS product (
+        "productCode" TEXT PRIMARY KEY,
+        "inventedName" TEXT,
+        "nameMedicinalProduct" TEXT,
+        "internalMaterialCode" TEXT,
+        "productRecall" BOOLEAN DEFAULT false,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+      CREATE TABLE IF NOT EXISTS batch (
+        id TEXT PRIMARY KEY,
+        "productCode" TEXT,
+        "batchNumber" TEXT,
+        "expiryDate" TEXT,
+        "manufacturerName" TEXT,
+        "batchRecall" BOOLEAN DEFAULT false,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+      CREATE TABLE IF NOT EXISTS leaflet (
+        id TEXT PRIMARY KEY,
+        "productCode" TEXT,
+        "batchNumber" TEXT,
+        "leafletType" TEXT,
+        lang TEXT,
+        "epiMarket" TEXT,
+        "xmlFileContent" TEXT,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+      CREATE TABLE IF NOT EXISTS audit (
+        id TEXT PRIMARY KEY,
+        "userId" TEXT,
+        "userGroup" TEXT,
+        model TEXT,
+        transaction TEXT,
+        action TEXT,
+        diffs TEXT,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+      CREATE TABLE IF NOT EXISTS product_strength (
+        id SERIAL PRIMARY KEY,
+        "productCode" TEXT,
+        strength TEXT,
+        substance TEXT,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+      CREATE TABLE IF NOT EXISTS product_market (
+        id SERIAL PRIMARY KEY,
+        "productCode" TEXT,
+        "marketId" TEXT,
+        "nationalCode" TEXT,
+        "mahName" TEXT,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+      CREATE TABLE IF NOT EXISTS product_image (
+        id SERIAL PRIMARY KEY,
+        "productCode" TEXT,
+        content TEXT,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+      CREATE TABLE IF NOT EXISTS leaflet_file (
+        id SERIAL PRIMARY KEY,
+        "leafletId" TEXT,
+        content TEXT,
+        filename TEXT,
+        "createdAt" TEXT,
+        "updatedAt" TEXT,
+        "createdBy" TEXT,
+        "updatedBy" TEXT,
+        "version" INTEGER DEFAULT 1,
+        "owner" TEXT
+      );
+    `);
+    console.log('Database tables ensured');
+
+    // Auto-seed if product table is empty
+    const { rows } = await client.query('SELECT COUNT(*) FROM product');
+    if (parseInt(rows[0].count) === 0) {
+      console.log('Empty database detected, running seed...');
+      const { seed } = await import('./db/seed.js');
+      await seed(db);
+      console.log('Seed complete');
+    }
+  } finally {
+    client.release();
+  }
+}
+
 const app = new Hono();
 
 // Middleware
@@ -58,6 +184,13 @@ app.route('/', createCrudRoutes(db));
 const port = parseInt(process.env.PORT || '3000');
 console.log(`PTP Demo Server starting on port ${port}`);
 
-serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`Server running at http://localhost:${info.port}`);
-});
+autoMigrate()
+  .then(() => {
+    serve({ fetch: app.fetch, port }, (info) => {
+      console.log(`Server running at http://localhost:${info.port}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to initialize database:', err);
+    process.exit(1);
+  });

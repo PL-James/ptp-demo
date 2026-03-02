@@ -14,15 +14,6 @@ import {
 
 const { Pool } = pg;
 
-const DATABASE_URL = process.env.DATABASE_URL;
-if (!DATABASE_URL) {
-  console.error('DATABASE_URL environment variable is required');
-  process.exit(1);
-}
-
-const pool = new Pool({ connectionString: DATABASE_URL });
-const db = drizzle(pool);
-
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function gtin(suffix: string): string {
@@ -244,7 +235,7 @@ const MARKETS = [
 
 // ─── Seed Execution ─────────────────────────────────────────────────────────
 
-async function seed() {
+export async function seed(db: ReturnType<typeof drizzle>) {
   console.log('Seeding PTP Demo database...\n');
 
   // Clear existing data (in reverse dependency order)
@@ -290,11 +281,22 @@ async function seed() {
   console.log(`  Strengths: ${STRENGTHS.length}`);
   console.log(`  Markets: ${MARKETS.length}`);
 
-  await pool.end();
 }
 
-seed().catch((err) => {
-  console.error('Seed failed:', err);
-  pool.end();
-  process.exit(1);
-});
+// Standalone execution
+if (process.argv[1]?.endsWith('seed.ts') || process.argv[1]?.endsWith('seed.js')) {
+  const DATABASE_URL = process.env.DATABASE_URL;
+  if (!DATABASE_URL) {
+    console.error('DATABASE_URL environment variable is required');
+    process.exit(1);
+  }
+  const pool = new Pool({ connectionString: DATABASE_URL });
+  const db = drizzle(pool);
+  seed(db)
+    .then(() => pool.end())
+    .catch((err) => {
+      console.error('Seed failed:', err);
+      pool.end();
+      process.exit(1);
+    });
+}
