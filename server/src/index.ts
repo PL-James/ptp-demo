@@ -6,6 +6,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 import auth from './routes/auth.js';
 import { createCrudRoutes } from './routes/crud.js';
+import { createLeafletApiRoutes } from './routes/leaflet-api.js';
 
 const { Pool } = pg;
 
@@ -210,6 +211,9 @@ function sseHandler(c: any) {
 }
 app.get('/demo-events', sseHandler);
 app.get('/events', sseHandler);
+
+// Leaflet API routes (BDNS, gtinOwner, metadata, leaflets — must be before CRUD catch-all)
+app.route('/', createLeafletApiRoutes(db));
 
 // CRUD routes for all tables
 app.route('/', createCrudRoutes(db));
