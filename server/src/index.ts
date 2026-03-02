@@ -186,22 +186,30 @@ app.get('/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOStri
 // Auth routes
 app.route('/', auth);
 
-// SSE events endpoint (stub for Decaf event listener)
-app.get('/demo-events', (c) => {
-  return c.text('data: {"type":"connected"}\n\n', 200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-  });
-});
-
-app.get('/events', (c) => {
-  return c.text('data: {"type":"connected"}\n\n', 200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive',
-  });
-});
+// SSE events endpoint (stub for Decaf event listener — keeps connection alive)
+function sseHandler(c: any) {
+  return new Response(
+    new ReadableStream({
+      start(controller) {
+        controller.enqueue(new TextEncoder().encode('data: {"type":"connected"}\n\n'));
+        const interval = setInterval(() => {
+          try { controller.enqueue(new TextEncoder().encode(': heartbeat\n\n')); }
+          catch { clearInterval(interval); }
+        }, 30000);
+        c.req.raw.signal?.addEventListener('abort', () => clearInterval(interval));
+      },
+    }),
+    {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    }
+  );
+}
+app.get('/demo-events', sseHandler);
+app.get('/events', sseHandler);
 
 // CRUD routes for all tables
 app.route('/', createCrudRoutes(db));

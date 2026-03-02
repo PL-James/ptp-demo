@@ -86,8 +86,10 @@ export function createCrudRoutes(db: DrizzleDb): Hono {
     const { table } = resolved;
     const columns = getTableColumns(table);
     const limit = parseInt(c.req.query('limit') || '25');
-    const offsetParam = parseInt(c.req.query('offset') || '0');
+    const offsetParam = parseInt(c.req.query('offset') || '1');
     const direction = c.req.query('direction') || 'asc';
+    // offset is 1-based page number from Decaf framework
+    const sqlOffset = Math.max(0, (offsetParam - 1) * limit);
 
     // Extract sort field from the wildcard path segment
     const urlPath = c.req.path;
@@ -107,7 +109,7 @@ export function createCrudRoutes(db: DrizzleDb): Hono {
     // Fetch page with sort and pagination
     let query = db.select().from(table);
     if (orderBy) query = query.orderBy(orderBy) as any;
-    const data = await query.limit(limit).offset(Math.max(0, offsetParam));
+    const data = await query.limit(limit).offset(sqlOffset);
 
     const modelName = tableName.charAt(0).toUpperCase() + tableName.slice(1);
     const enriched = data.map((row: any) => ({ __model: modelName, ...row }));
@@ -115,7 +117,7 @@ export function createCrudRoutes(db: DrizzleDb): Hono {
     return c.json({
       data: enriched,
       total: Math.ceil(total / limit),
-      current: Math.floor(offsetParam / limit),
+      current: offsetParam,
       count: total,
     });
   });
