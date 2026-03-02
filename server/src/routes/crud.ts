@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { eq, sql, and, SQL } from 'drizzle-orm';
+import { eq, sql, and, SQL, asc, desc } from 'drizzle-orm';
 import { PgTable } from 'drizzle-orm/pg-core';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { tableRegistry, primaryKeyMap } from '../db/schema.js';
@@ -77,22 +77,46 @@ export function createCrudRoutes(db: DrizzleDb): Hono {
     });
   });
 
-  // ─── Catch deeper statement paths: GET /:table/statement/:type/:rest ───
+  // ─── Catch deeper statement paths: GET /:table/statement/paginateBy/:sortField ───
   app.get('/:table/statement/:stmtType/*', async (c) => {
     const tableName = c.req.param('table');
     const resolved = resolveTable(tableName);
     if (!resolved) return c.json({ error: `Unknown table: ${tableName}` }, 404);
 
     const { table } = resolved;
-    const data = await db.select().from(table);
+    const columns = getTableColumns(table);
+    const limit = parseInt(c.req.query('limit') || '25');
+    const offsetParam = parseInt(c.req.query('offset') || '0');
+    const direction = c.req.query('direction') || 'asc';
+
+    // Extract sort field from the wildcard path segment
+    const urlPath = c.req.path;
+    const pathParts = urlPath.split('/statement/')[1]?.split('/') || [];
+    const sortField = pathParts[1]?.replace(/\/$/, '') || '';
+
+    // Build query with sorting
+    const sortCol = sortField && columns[sortField] ? columns[sortField] : null;
+    const orderBy = sortCol
+      ? (direction === 'desc' ? desc(sortCol) : asc(sortCol))
+      : undefined;
+
+    // Count total
+    const countResult = await db.select({ count: sql<number>`count(*)` }).from(table);
+    const total = Number(countResult[0]?.count || 0);
+
+    // Fetch page with sort and pagination
+    let query = db.select().from(table);
+    if (orderBy) query = query.orderBy(orderBy) as any;
+    const data = await query.limit(limit).offset(Math.max(0, offsetParam));
+
     const modelName = tableName.charAt(0).toUpperCase() + tableName.slice(1);
     const enriched = data.map((row: any) => ({ __model: modelName, ...row }));
 
     return c.json({
       data: enriched,
-      total: 1,
-      current: 1,
-      count: enriched.length,
+      total: Math.ceil(total / limit),
+      current: Math.floor(offsetParam / limit),
+      count: total,
     });
   });
 
