@@ -1,0 +1,29 @@
+// .dcf-product-page {
+//   ::ng-deep {
+//     ion-list {
+//       background: none !important;
+//     }
+
+//     .dcf-filter-component {
+//       margin-top: 0px !important;
+//       margin-bottom: 0px !important;
+//       @media (max-width: 680px) {
+//         margin-top: 1rem !important;
+//         > div:last-child {
+//           padding-left: 0px !important;
+//           margin-bottom: 0px !important;
+//         }
+//       }
+//       > div:first-child {
+//         padding-left: 0px !important;
+//       }
+
+//       > div:last-child {
+//         padding-right: 0px !important;
+//         ion-select {
+//           --background: var(--dcf-card-background) !important;
+//         }
+//       }
+//     }
+//   }
+// }

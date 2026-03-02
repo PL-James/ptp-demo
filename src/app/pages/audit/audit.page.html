@@ -1,0 +1,32 @@
+<app-header [title]="locale+'.title'" />
+
+<ion-content fullscreen="true">
+  <main>
+    <app-container>
+      <app-card-title
+        [locale]="locale"
+        [route]="route"
+        [operation]="operation"
+        [operations]="operations"
+        [title]="locale +'.title' | translate"
+        [allowCreate]="true"
+        [createButton]="{
+          text: 'dowload',
+          handle: exportCsvFile.bind(this),
+          visible: _data?.length
+        }"
+        [subtitle]="locale +'.description' | translate"
+      />
+
+      <div class="dcf-list-container">
+        <ngx-decaf-table
+          [model]="model"
+          [route]="route"
+          [allowOperations]="false"
+          [locale]="locale"
+          (refreshEvent)="handleEvent($event)"
+        />
+      </div>
+    </app-container>
+  </main>
+</ion-content>

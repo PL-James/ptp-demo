@@ -1,0 +1,115 @@
+import { CommonModule } from '@angular/common';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
+import { IPagedComponentProperties } from '@decaf-ts/ui-decorators';
+import { ComponentEventNames, ElementPositions } from '@decaf-ts/ui-decorators';
+import {
+  ComponentRendererComponent,
+  ElementPosition,
+  NgxParentComponentDirective,
+  Dynamic,
+  IconComponent,
+  IBaseCustomEvent,
+} from '@decaf-ts/for-angular';
+import { ITabItem } from 'src/app/utils';
+import { Model } from '@decaf-ts/decorator-validation';
+
+@Dynamic()
+@Component({
+  selector: 'app-switcher',
+  templateUrl: './switcher.component.html',
+  styleUrls: ['./switcher.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    TranslatePipe,
+    IconComponent,
+    ComponentRendererComponent,
+  ],
+})
+export class AppSwitcherComponent
+  extends NgxParentComponentDirective
+  implements OnInit, OnDestroy
+{
+  @Input()
+  items: ITabItem[] = [];
+
+  @Input()
+  position: Extract<ElementPosition, 'top' | 'left'> = ElementPositions.top;
+
+  @Input()
+  mode: 'button' | 'toggle' | 'default' = 'default';
+
+  @Input()
+  type: 'tabs' | 'switcher' | 'column' = 'switcher';
+
+  @Input()
+  leafletParam: 'productCode' | 'batchNumber' = 'productCode';
+
+  data: Partial<Model>[] | undefined;
+
+  override value: string | undefined;
+
+  override activeIndex: number = 0;
+
+  constructor() {
+    super('SwitcherComponent');
+  }
+
+  async ngOnInit() {
+    // await super.ngOnInit();
+    // Initialize items based on children and existing items input
+    if (!this.items.length || this.items.length < this.children.length) {
+      this.items = this.children.map(({ props }, index) => {
+        const tab = this.items[index];
+        const { title, description, url, value, showTitle } = tab ? tab : props;
+        return {
+          title,
+          description,
+          value,
+          url,
+          index,
+          showTitle: showTitle ?? true,
+        } as IPagedComponentProperties;
+      });
+      if (this.type === 'switcher')
+        this.activePage = this.getActivePage(this.activeIndex);
+    }
+    if (this.type === 'tabs') {
+      this.items.forEach((item, index) => {
+        const { url } = item;
+        if (url && this.router.url.includes(url)) this.activeIndex = index;
+      });
+    }
+    await super.initialize();
+  }
+
+  override async handleEvent(event: IBaseCustomEvent): Promise<void> {
+    this.data = event.data as Partial<Model>[];
+    this.listenEvent.emit(event);
+  }
+
+  override async ngOnDestroy(): Promise<void> {
+    await super.ngOnDestroy();
+    if (this.timerSubscription) this.timerSubscription.unsubscribe();
+  }
+
+  async handleNavigateToLeaflet() {
+    const param = `${this.modelId ? `?${this.leafletParam}=${this.modelId}` : ''}`;
+    await this.router.navigateByUrl(`/leaflets/create${param}`);
+  }
+
+  async navigate(page: number): Promise<void | boolean> {
+    const { url, value } = this.items[page];
+    if (url) return await this.router.navigateByUrl(url || '/');
+    if (value !== this.value) {
+      this.value = value;
+      this.activeIndex = page;
+      this.listenEvent.emit({
+        name: ComponentEventNames.Change,
+        data: value,
+        component: this.constructor.name,
+      });
+    }
+  }
+}

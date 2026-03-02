@@ -1,0 +1,59 @@
+<app-header
+  [title]="locale+'.title'"
+  [showBackButton]="false"
+/>
+
+<ion-content fullscreen="true">
+  <main>
+    <app-container size="expand">
+      <app-card-title
+        [locale]="locale"
+        [borders]="false"
+        [title]="locale +'.title' | translate"
+        [subtitle]="locale +'.description' | translate"
+        [allowCreate]="false"
+      />
+      <div class="dcf-grid dcf-grid-small dcf-grid-match dcf-width-1-1">
+        @for(card of cards; track $index) {
+        <div class="dcf-width-1-3@l dcf-width-1-2@m">
+          <ion-card
+            class="dcf-card-item dcf-card-default"
+            (click)="handleClick(card.url)"
+          >
+            <ion-card-content>
+              <div class="dcf-grid dcf-grid-small dcf-width-1-1">
+                <div
+                  class="dcf-width-1-4"
+                  style="max-width: 60px"
+                >
+                  <ngx-decaf-icon
+                    [name]="card.icon"
+                    size="large"
+                    color="primary"
+                  ></ngx-decaf-icon>
+                  <!-- <ion-img
+                    [src]="'assets/images/icons/' + card.icon"
+                    title="{{card.title}}"
+                    alt="{{card.title}}"
+                  /> -->
+                </div>
+                <div class="dcf-width-expand dcf-flex dcf-flex-middle">
+                  <div>
+                    <ion-card-title>
+                      {{ locale+'.cards.' + card.title + '.title' | translate }}
+                    </ion-card-title>
+                    <p>
+                      {{ locale+'.cards.' + card.title + '.description' |
+                      translate }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </ion-card-content>
+          </ion-card>
+        </div>
+        }
+      </div>
+    </app-container>
+  </main>
+</ion-content>

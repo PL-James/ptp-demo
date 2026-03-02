@@ -1,0 +1,73 @@
+<ion-app>
+  <ion-split-pane
+    [class.dcf-collapsed]="menuCollapsed"
+    when="(min-width: 1200px)"
+    contentId="main-content"
+  >
+    <ion-menu
+      [class.dcf-collapsable]="showCollapseButton"
+      [class.dcf-collapsed]="menuCollapsed"
+      contentId="main-content"
+      type="overlay"
+      [disabled]="!hasMenu"
+      [hidden]="!loggedIn"
+      #component
+    >
+      <section class="dcf-logo-container">
+        <!-- @if(!menuCollapsed) {
+          <app-logo width="200" position="left" />
+        } @else {
+          <app-logo width="30" position="center" logo="assets/images/favicon.svg" logoContrast="assets/images/favicon-contrast.svg" />
+        } -->
+        @if (!menuCollapsed) {
+          <div class="dcf-logo-full">
+            <div class="dcf-logo">
+              <app-logo
+                width="25"
+                position="center"
+                logo="assets/images/favicon-contrast.svg"
+                logoContrast="assets/images/favicon-contrast.svg"
+              />
+            </div>
+            <div>
+              <h1 class="dcf-logo-title">{{ appName }}</h1>
+              <p class="dcf-logo-subtitle">{{ appDescription }}</p>
+            </div>
+          </div>
+        } @else {
+          <app-logo
+            width="30"
+            position="center"
+            logo="assets/images/favicon.svg"
+            logoContrast="assets/images/favicon-contrast.svg"
+          />
+        }
+      </section>
+
+      @if (showCollapseButton) {
+        <a
+          class="dcf-menu-expand-button"
+          tabindex="0"
+          (keydown.enter)="handleCollapseMenu()"
+          (click)="handleCollapseMenu()"
+        >
+          <ngx-decaf-icon
+            name="ti-layout-sidebar-left-collapse"
+            [size]="menuCollapsed ? 'large' : 'default'"
+          />
+          <span>{{ 'menu.collapse' | translate }}</span>
+        </a>
+      }
+
+      @if (initialized) {
+        <ion-content
+          class="dfc-animation dcf-animation-slide-top-small dcf-animation-fast"
+        >
+          <app-menu [collapsed]="menuCollapsed" />
+        </ion-content>
+      }
+    </ion-menu>
+
+    <ion-router-outlet id="main-content"></ion-router-outlet>
+  </ion-split-pane>
+</ion-app>

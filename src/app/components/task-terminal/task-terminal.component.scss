@@ -1,0 +1,56 @@
+$xterm-font: "Ubuntu Mono", monospace;
+// "Source Code Pro", monospace;
+// "Cascadia Mono", monospace;
+// "Fira Code", monospace;
+//  "Courier", Courier, monospace;
+// "Courier Sans", Courier, monospace
+.dcf-task-terminal-component {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: #1e1e1e; /* Fundo do terminal */
+  display: block;
+  position: relative;
+  .xterm-container {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #333;
+    border-radius: 4px;
+
+    ::ng-deep {
+      * {
+        font-family: $xterm-font !important;
+      }
+
+      .xterm {
+        font-family: $xterm-font;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      .xterm-screen {
+        width: calc(100% - 10px) !important;
+      }
+      // fixing xterm layout glitches
+      .xterm-char-measure-element {
+        color: transparent !important;
+      }
+
+      .xterm-helper-textarea {
+        display: none;
+      }
+      .xterm-scrollable-element,
+      .xterm-viewport {
+        background-color: var(--dcf-color-dark) !important; /* Fundo do terminal */
+      }
+
+      .xterm-cursor {
+        background-color: #ffffff; /* Cor do cursor */
+      }
+
+      .xterm-selection {
+        background-color: rgba(255, 255, 255, 0.3); /* Seleção */
+      }
+    }
+  }
+}

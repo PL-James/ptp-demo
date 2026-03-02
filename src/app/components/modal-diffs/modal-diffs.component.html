@@ -1,0 +1,64 @@
+<div class="dcf-modal-diffs-component">
+  <div class="dcf-table-container">
+    <table class="dcf-table">
+      <thead>
+        <tr>
+          <th>{{ locale + '.diffs.property' | translate }}</th>
+          <th>{{ locale + '.diffs.oldValue' | translate }}</th>
+          <th>{{ locale + '.diffs.newValue' | translate }}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (diff of filteredDiffs | keyvalue; track diff.key) {
+          <tr>
+            <td width="20%">
+              {{ parseLabel(diff.key) }}
+            </td>
+            <td width="40%">
+              @if (typeof diff.value.old === 'object') {
+                <div>{{ diff.value.old | json }}</div>
+              } @else {
+                <div [innerHTML]="diff.value?.old"></div>
+              }
+            </td>
+            <td width="40%">
+              @if (typeof diff.value.new === 'object') {
+                <div>{{ diff.value.new | json }}</div>
+                <!-- @for (item of diff.value.new; track item) {
+                  <div>{{ item | json }}</div>
+                } -->
+              } @else {
+                <div [innerHTML]="diff.value?.new"></div>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <div class="dcf-buttons-grid dcf-grid dcf-grid-small dcf-flex dcf-flex-right">
+    <div>
+      <ion-button
+        fill="clear"
+        (click)="handleAction('cancel')"
+        color="primary"
+      >
+        {{ 'diffs.cancel' | translate }}
+      </ion-button>
+    </div>
+    @if (
+      operation === OperationKeys.CREATE || operation === OperationKeys.UPDATE
+    ) {
+      <div>
+        <ion-button
+          (click)="confirmButton.handle()"
+          color="primary"
+        >
+          {{ confirmButton.text | translate }}
+        </ion-button>
+      </div>
+    }
+  </div>
+</div>

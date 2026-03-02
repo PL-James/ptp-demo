@@ -1,0 +1,34 @@
+<app-header [title]="locale+'.title'" />
+
+<ion-content fullscreen="true">
+  <main>
+    <app-container>
+      <app-card-title
+        [locale]="locale"
+        [route]="route"
+        [title]="locale +'.title' | translate"
+        [allowCreate]="false"
+        [subtitle]="locale +'.description' | translate"
+      />
+
+      <div class="dcf-list-container tasks-table">
+        @if(_initialized) { @if(!operation) {
+        <ngx-decaf-table
+          [model]="model"
+          [route]="route"
+          [locale]="locale"
+          [operation]="operation"
+          [operations]="operations"
+          (listenEvent)="handleEvent($event)"
+        />
+        } @else { @if(model) {
+        <app-task-terminal
+          [model]="model"
+          [modelId]="modelId"
+        />
+
+        } } }
+      </div>
+    </app-container>
+  </main>
+</ion-content>

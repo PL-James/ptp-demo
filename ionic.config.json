@@ -1,0 +1,8 @@
+{
+  "name": "@pharmaledgerassoc/ptp-frontend-ew",
+  "type": "angular-standalone",
+  "root": ".",
+  "integrations": {
+    "capacitor": {}
+  }
+}

@@ -1,0 +1,33 @@
+main {
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  padding-top: 15vh;
+  .dcf-card-container {
+    min-width: 90vw;
+    @media (min-width: 768px) {
+      min-width: 460px !important;
+    }
+  }
+  #dcf-logo {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 4rem !important;
+    ion-img {
+      max-width: 310px;
+      min-width: 220px;
+    }
+  }
+  // .dcf-card-container {
+  //   max-width: 95vw;
+  //   width: auto;
+  //   min-width: 300px !important;
+  //   @media (min-width: 480px) {
+  //     min-width: 460px !important;
+  //   }
+  // }
+}
+
+::ng-deep ion-menu {
+  display: none !important;
+}

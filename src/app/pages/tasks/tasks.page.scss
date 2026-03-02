@@ -1,0 +1,8 @@
+.tasks-table ::ng-deep {
+  th > *:last-child {
+    display: none;
+  }
+  tr > *:last-child {
+    display: none;
+  }
+}

@@ -1,0 +1,21 @@
+.dcf-card-item {
+  &:hover {
+    cursor: pointer;
+    border-color: var(--dcf-color-primary);
+
+    ngx-decaf-icon ::ng-deep ti,
+    ion-img {
+      transform: scale(1.1);
+      transition: all 0.1s ease-in-out;
+    }
+  }
+
+  ngx-decaf-icon ::ng-deep {
+    .ti {
+      height: 40px;
+      position: relative;
+      scale: 0.8;
+      top: 6px !important;
+    }
+  }
+}

@@ -1,0 +1,9 @@
+./**/*
+!./*.json
+!src/*
+!tests/*
+!workdocs/*
+!./.npmrc
+!gulpfile.js
+!jest.config.ts
+!webpack.config.js
