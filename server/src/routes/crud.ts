@@ -143,6 +143,26 @@ export function createCrudRoutes(db: DrizzleDb): Hono {
     return c.json(data.map((row: any) => ({ __model: modelName, ...row })));
   });
 
+  // ─── List by field: GET /:table/listBy/:field ─────────────────────────
+  app.get('/:table/listBy/:field', async (c) => {
+    const tableName = c.req.param('table');
+    const field = c.req.param('field');
+    const resolved = resolveTable(tableName);
+    if (!resolved) return c.json({ error: `Unknown table: ${tableName}` }, 404);
+
+    const { table } = resolved;
+    const columns = getTableColumns(table);
+    const col = columns[field];
+    const direction = c.req.query('direction') || 'asc';
+    const sortOrder = col ? (direction === 'desc' ? desc(col) : asc(col)) : undefined;
+
+    let query = db.select().from(table);
+    if (sortOrder) query = query.orderBy(sortOrder) as any;
+    const data = await query;
+    const modelName = tableName.charAt(0).toUpperCase() + tableName.slice(1);
+    return c.json(data.map((row: any) => ({ __model: modelName, ...row })));
+  });
+
   // ─── Bulk read: GET /:table/bulk ───────────────────────────────────────
   app.get('/:table/bulk', async (c) => {
     const tableName = c.req.param('table');
