@@ -74,40 +74,6 @@ export const BarcodeTypes = {
 } as const;
 
 export class DatamatrixModalHandler extends NgxEventHandler {
-  private static readonly charsMap: Record<string, string> = {
-    '33': '!',
-    '34': '"',
-    '35': '#',
-    '36': '$',
-    '37': '%',
-    '38': '&',
-    '39': "'",
-    '40': '(',
-    '41': ')',
-    '42': '*',
-    '43': '+',
-    '45': '-',
-    '46': '.',
-    '47': '/',
-    '58': ':',
-    '59': ';',
-    '60': '<',
-    '61': '=',
-    '62': '>',
-    '63': '?',
-    '64': '@',
-    '91': '[',
-    '92': '\\',
-    '93': ']',
-    '94': '^',
-    '95': '_',
-    '96': '`',
-    '123': '{',
-    '124': '|',
-    '125': '}',
-    '126': '~',
-  };
-
   private static readonly barcodeOptions = {
     text: '',
     includeBarcodeText: true,
@@ -159,25 +125,8 @@ export class DatamatrixModalHandler extends NgxEventHandler {
 
   static getBarcodeData(batch: Batch): string {
     const { batchNumber, productCode, expiryDate } = batch;
-    const serialNumber = '';
-    const emptySerialNumber = serialNumber === '' || typeof serialNumber === 'undefined';
-    const sanitizeForBwipp = (value: string): string => {
-      return value
-        .split('')
-        .map((char) => {
-          if (this.charsMap[char.charCodeAt(0)]) {
-            return Number(char.charCodeAt(0)) >= 100 ? `^${char.charCodeAt(0)}` : `^0${char.charCodeAt(0)}`;
-          }
-          return char;
-        })
-        .join('');
-    };
 
-    return (
-      emptySerialNumber
-        ? `(01)${productCode}(10)${sanitizeForBwipp(batchNumber)}(17)${expiryDate}`
-        : `(01)${productCode}(21)${sanitizeForBwipp(serialNumber)}(10)${sanitizeForBwipp(batchNumber)}(17)${expiryDate}`
-    ).replace(/"/g, '\\"');
+    return `(01)${productCode}(10)${batchNumber}(17)${expiryDate}`;
   }
 
   static getProductBarcodeData(product: Product): string {
