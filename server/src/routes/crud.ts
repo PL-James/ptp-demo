@@ -53,9 +53,9 @@ export function createCrudRoutes(db: DrizzleDb): Hono {
     if (!resolved) return c.json({ error: `Unknown table: ${tableName}` }, 404);
 
     const { table } = resolved;
-    const page = parseInt(c.req.query('page') || '1');
+    const page = parseInt(c.req.query('page') || '0');
     const size = parseInt(c.req.query('size') || '25');
-    const offset = (page - 1) * size;
+    const offset = Math.max(0, page * size);
 
     // Count total
     const countResult = await db.select({ count: sql<number>`count(*)` }).from(table);
