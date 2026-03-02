@@ -140,6 +140,16 @@ const PRODUCTS = [
     createdAt: daysAgo(30),
     updatedAt: daysAgo(9),
   },
+  {
+    productCode: gtin('7612345000134'),
+    inventedName: 'AstraLabel Demo',
+    nameMedicinalProduct: 'Cetirizine Hydrochloride 10mg Film-Coated Tablets',
+    internalMaterialCode: 'ALC-CTZ-010',
+    productRecall: false,
+    owner: 'PharmaLedger',
+    createdAt: daysAgo(3),
+    updatedAt: daysAgo(1),
+  },
 ];
 
 // ─── Batches ────────────────────────────────────────────────────────────────
@@ -159,6 +169,7 @@ const BATCHES = [
   { id: 'bt-012', productCode: PRODUCTS[9].productCode, batchNumber: 'BT-LIS-2026-001', expiryDate: '280200', batchRecall: false, owner: 'PharmaLedger', createdAt: daysAgo(8), updatedAt: daysAgo(1) },
   { id: 'bt-013', productCode: PRODUCTS[10].productCode, batchNumber: 'BT-PAR-2026-001', expiryDate: '270800', batchRecall: false, owner: 'PharmaLedger', createdAt: daysAgo(7), updatedAt: daysAgo(1) },
   { id: 'bt-014', productCode: PRODUCTS[11].productCode, batchNumber: 'BT-AZI-2026-001', expiryDate: '280500', batchRecall: false, owner: 'PharmaLedger', createdAt: daysAgo(5), updatedAt: daysAgo(1) },
+  { id: 'bt-015', productCode: PRODUCTS[12].productCode, batchNumber: 'BT-ALC-2026-001', expiryDate: '280900', batchRecall: false, owner: 'PharmaLedger', createdAt: daysAgo(2), updatedAt: daysAgo(1) },
 ];
 
 // ─── Leaflets ───────────────────────────────────────────────────────────────
@@ -174,6 +185,8 @@ const LEAFLETS = [
   { id: 'lf-008', productCode: PRODUCTS[4].productCode, leafletType: 'leaflet', lang: 'en', epiMarket: 'UK', xmlFileContent: '<?xml version="1.0"?><leaflet product="Amoxicillin" type="leaflet" lang="en" />', owner: 'PharmaLedger', createdAt: daysAgo(35), updatedAt: daysAgo(2) },
   { id: 'lf-009', productCode: PRODUCTS[5].productCode, leafletType: 'smpc', lang: 'en', epiMarket: 'EU', xmlFileContent: '<?xml version="1.0"?><leaflet product="Losartan" type="smpc" lang="en" />', owner: 'PharmaLedger', createdAt: daysAgo(30), updatedAt: daysAgo(4) },
   { id: 'lf-010', productCode: PRODUCTS[7].productCode, leafletType: 'leaflet', lang: 'en', epiMarket: 'EU', xmlFileContent: '<?xml version="1.0"?><leaflet product="Ibuprofen" type="leaflet" lang="en" />', owner: 'PharmaLedger', createdAt: daysAgo(20), updatedAt: daysAgo(1) },
+  { id: 'lf-011', productCode: PRODUCTS[12].productCode, leafletType: 'leaflet', lang: 'en', epiMarket: 'EU', xmlFileContent: '<?xml version="1.0"?><leaflet product="AstraLabel Demo" type="leaflet" lang="en"><section title="What is Cetirizine?"><paragraph>Cetirizine is an antihistamine used to relieve allergy symptoms such as watery eyes, runny nose, itching, and sneezing.</paragraph></section></leaflet>', owner: 'PharmaLedger', createdAt: daysAgo(2), updatedAt: daysAgo(1) },
+  { id: 'lf-012', productCode: PRODUCTS[12].productCode, batchNumber: 'BT-ALC-2026-001', leafletType: 'prescribingInfo', lang: 'en', epiMarket: 'EU', xmlFileContent: '<?xml version="1.0"?><leaflet product="AstraLabel Demo" type="prescribingInfo" lang="en" batch="BT-ALC-2026-001"><section title="Prescribing Information"><paragraph>Cetirizine Hydrochloride 10mg. Take one tablet daily. Do not exceed recommended dose.</paragraph></section></leaflet>', owner: 'PharmaLedger', createdAt: daysAgo(1), updatedAt: daysAgo(1) },
 ];
 
 // ─── Audit ──────────────────────────────────────────────────────────────────
@@ -216,6 +229,7 @@ const STRENGTHS = [
   { uuid: 'ps-010', productCode: PRODUCTS[6].productCode, strength: '100mcg', substance: 'Levothyroxine Sodium', owner: 'PharmaLedger', createdAt: daysAgo(55), updatedAt: daysAgo(55) },
   { uuid: 'ps-011', productCode: PRODUCTS[7].productCode, strength: '400mg', substance: 'Ibuprofen', owner: 'PharmaLedger', createdAt: daysAgo(50), updatedAt: daysAgo(50) },
   { uuid: 'ps-012', productCode: PRODUCTS[7].productCode, strength: '200mg', substance: 'Ibuprofen', owner: 'PharmaLedger', createdAt: daysAgo(50), updatedAt: daysAgo(50) },
+  { uuid: 'ps-013', productCode: PRODUCTS[12].productCode, strength: '10mg', substance: 'Cetirizine Hydrochloride', owner: 'PharmaLedger', createdAt: daysAgo(3), updatedAt: daysAgo(3) },
 ];
 
 // ─── Product Markets ────────────────────────────────────────────────────────
@@ -231,6 +245,7 @@ const MARKETS = [
   { marketId: 'UK', productCode: PRODUCTS[4].productCode, nationalCode: 'UK-2026-005', mahName: 'PharmaLedger UK', owner: 'PharmaLedger', createdAt: daysAgo(70), updatedAt: daysAgo(70) },
   { marketId: 'EU', productCode: PRODUCTS[5].productCode, nationalCode: 'EU/1/26/006', mahName: 'PharmaLedger EU', owner: 'PharmaLedger', createdAt: daysAgo(60), updatedAt: daysAgo(60) },
   { marketId: 'EU', productCode: PRODUCTS[7].productCode, nationalCode: 'EU/1/26/008', mahName: 'PharmaLedger EU', owner: 'PharmaLedger', createdAt: daysAgo(50), updatedAt: daysAgo(50) },
+  { marketId: 'EU', productCode: PRODUCTS[12].productCode, nationalCode: 'EU/1/26/013', mahName: 'PharmaLedger EU', owner: 'PharmaLedger', createdAt: daysAgo(3), updatedAt: daysAgo(3) },
 ];
 
 // ─── Seed Execution ─────────────────────────────────────────────────────────
