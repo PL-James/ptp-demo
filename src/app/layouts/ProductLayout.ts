@@ -9,8 +9,8 @@ import {
   uilayoutprop,
   UIMediaBreakPoints
 } from '@decaf-ts/ui-decorators';
-import { Product } from '@pharmaledgerassoc/ptp-toolkit/shared';
 import { ProductHandler } from '../handlers/ProductHandler';
+import { ProductForm } from '../forms/ProductForm';
 import { EpiLayout } from './EpiLayout';
 
 @uilayout('ngx-decaf-crud-form', true, 1, {
@@ -24,7 +24,7 @@ import { EpiLayout } from './EpiLayout';
 })
 @model()
 export class ProductLayout extends Model {
-  @uichild(Product.name, 'ngx-decaf-fieldset', {
+  @uichild(ProductForm.name, 'ngx-decaf-fieldset', {
     title: 'product.section.details.title',
     borders: false,
     required: true,
@@ -33,7 +33,7 @@ export class ProductLayout extends Model {
     pk: 'productCode',
   })
   @uilayoutprop(2)
-  product!: Product;
+  product!: ProductForm;
 
   @uichild(EpiLayout.name, 'app-switcher', {
     type: 'column',

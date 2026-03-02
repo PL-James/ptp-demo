@@ -6,21 +6,63 @@ import {
   NgxEventHandler,
   presentNgxInlineModal,
 } from '@decaf-ts/for-angular';
-import { Batch } from '@pharmaledgerassoc/ptp-toolkit/shared';
+import { Batch, Product } from '@pharmaledgerassoc/ptp-toolkit/shared';
+
+function clearElement(el: HTMLElement): void {
+  while (el.firstChild) el.removeChild(el.firstChild);
+}
+
+function createBarcodeWrapper(svgContainer: HTMLElement, labelText: string): HTMLElement {
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; padding: 8px 0; cursor: pointer;';
+  wrapper.appendChild(svgContainer);
+  const label = document.createElement('span');
+  label.style.cssText = 'font-size: 12px; color: var(--ion-color-medium); margin-top: 4px;';
+  label.textContent = labelText;
+  wrapper.appendChild(label);
+  return wrapper;
+}
 
 export async function createOnClickShowBarcodeModal(instance: CrudFieldComponent) {
-  if (!instance.value) {
-    instance.value = `<span class="ti ti-qrcode"></span> ${await instance.translate('batch.dataMatrix.view')}`;
-  }
   const element = instance.component?.nativeElement as HTMLIonItemElement;
   if (element) {
     if (!Object.keys(instance._data as Batch).length) {
       const repository = getModelAndRepository(Batch.name)?.repository;
       instance._data = (await repository?.read(instance.modelId)) as Batch;
     }
+    const batch = instance._data as Batch;
+    const inlineSvg = DatamatrixModalHandler.getDatamatrixCanvasElement(batch, BarcodeTypes.datamatrix, 150);
+    if (inlineSvg) {
+      const labelText = await instance.translate('batch.dataMatrix.view');
+      const wrapper = createBarcodeWrapper(inlineSvg, labelText);
+      clearElement(element);
+      element.appendChild(wrapper);
+    }
     element.classList.add('dcf-has-action');
     element.onclick = () => {
-      DatamatrixModalHandler.showBarcodeModal(instance._data as Batch);
+      DatamatrixModalHandler.showBarcodeModal(batch);
+    };
+  }
+}
+
+export async function createProductOnClickShowBarcodeModal(instance: CrudFieldComponent) {
+  const element = instance.component?.nativeElement as HTMLIonItemElement;
+  if (element) {
+    if (!Object.keys(instance._data as Product).length) {
+      const repository = getModelAndRepository(Product.name)?.repository;
+      instance._data = (await repository?.read(instance.modelId)) as Product;
+    }
+    const product = instance._data as Product;
+    const inlineSvg = DatamatrixModalHandler.getProductDatamatrixCanvasElement(product, 150);
+    if (inlineSvg) {
+      const labelText = await instance.translate('batch.dataMatrix.view');
+      const wrapper = createBarcodeWrapper(inlineSvg, labelText);
+      clearElement(element);
+      element.appendChild(wrapper);
+    }
+    element.classList.add('dcf-has-action');
+    element.onclick = () => {
+      DatamatrixModalHandler.showProductBarcodeModal(product);
     };
   }
 }
@@ -87,7 +129,6 @@ export class DatamatrixModalHandler extends NgxEventHandler {
 
   static async showBarcodeModal(item: Batch, injector?: EnvironmentInjector): Promise<void> {
     const datamatrixElement = DatamatrixModalHandler.getDatamatrixCanvasElement(item);
-    //TODO: Create logic to make button copy value with correct lwa url to clipboard
     if (datamatrixElement) {
       await presentNgxInlineModal(
         datamatrixElement,
@@ -97,7 +138,21 @@ export class DatamatrixModalHandler extends NgxEventHandler {
           headerTransparent: true,
         },
         injector
-        // this.injector
+      );
+    }
+  }
+
+  static async showProductBarcodeModal(item: Product, injector?: EnvironmentInjector): Promise<void> {
+    const datamatrixElement = DatamatrixModalHandler.getProductDatamatrixCanvasElement(item);
+    if (datamatrixElement) {
+      await presentNgxInlineModal(
+        datamatrixElement,
+        {
+          title: 'batch.dataMatrix.preview',
+          uid: 'dcf-datamatrix-modal',
+          headerTransparent: true,
+        },
+        injector
       );
     }
   }
@@ -126,13 +181,34 @@ export class DatamatrixModalHandler extends NgxEventHandler {
     ).replace(/"/g, '\\"');
   }
 
+  static getProductBarcodeData(product: Product): string {
+    return `(01)${product.productCode}`;
+  }
+
+  static getProductDatamatrixCanvasElement(
+    product: Product,
+    size: number = 280
+  ): HTMLElement | undefined {
+    const barcodeData = this.getProductBarcodeData(product);
+    return this.renderBarcodeToContainer(barcodeData, BarcodeTypes.datamatrix, size);
+  }
+
   static getDatamatrixCanvasElement(
     batch: Batch,
-    bcid: keyof typeof BarcodeTypes = BarcodeTypes.datamatrix
+    bcid: keyof typeof BarcodeTypes = BarcodeTypes.datamatrix,
+    size: number = 280
   ): HTMLElement | undefined {
     const barcodeData = this.getBarcodeData(batch);
+    return this.renderBarcodeToContainer(barcodeData, bcid, size);
+  }
+
+  private static renderBarcodeToContainer(
+    barcodeData: string,
+    bcid: keyof typeof BarcodeTypes,
+    size: number
+  ): HTMLElement | undefined {
     const container = document.createElement('div');
-    container.setAttribute('style', 'width: 280px; height: 280px;');
+    container.style.cssText = `width: ${size}px; height: ${size}px;`;
 
     const options = {
       ...this.barcodeOptions,
@@ -141,8 +217,15 @@ export class DatamatrixModalHandler extends NgxEventHandler {
     };
 
     try {
-      const image = BwipJs.toSVG(options);
-      container.innerHTML = image;
+      const svgString = BwipJs.toSVG(options);
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgString, 'image/svg+xml');
+      const svgEl = doc.documentElement;
+      if (svgEl && svgEl.tagName === 'svg') {
+        svgEl.setAttribute('width', '100%');
+        svgEl.setAttribute('height', '100%');
+        container.appendChild(document.importNode(svgEl, true));
+      }
     } catch (error) {
       console.error('Invalid barcode data supplied:', error);
     }

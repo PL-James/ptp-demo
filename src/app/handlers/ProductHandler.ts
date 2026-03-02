@@ -74,6 +74,7 @@ export class ProductHandler<M extends Model> extends NgxEventHandler {
     'version',
     'createdBy',
     'createdAt',
+    'dataMatrix',
   ] as string[];
 
   // static deleteEvents: > = {};
