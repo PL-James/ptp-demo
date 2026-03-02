@@ -5,9 +5,8 @@ WORKDIR /usr/local/app
 COPY ./ /usr/local/app/
 
 ARG NPM_TOKEN
-RUN echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc && \
-    npm ci && npm run patch-env:demo && npm run build:prod && \
-    rm -f .npmrc
+ENV NPM_TOKEN=${NPM_TOKEN}
+RUN npm ci && npm run patch-env:demo && npm run build:prod
 
 FROM nginx:latest AS runtime
 COPY --from=builder /usr/local/app/www /usr/share/nginx/html
