@@ -16,8 +16,14 @@ const { Pool } = pg;
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function gtin(suffix: string): string {
-  return ('0' + suffix).padStart(14, '0');
+function gtin(base: string): string {
+  const padded = ('0' + base).padStart(14, '0');
+  const digits = padded.slice(0, 13);
+  const weights = [3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3];
+  let sum = 0;
+  for (let i = 0; i < 13; i++) sum += parseInt(digits[i]) * weights[i];
+  const checkDigit = (10 - (sum % 10)) % 10;
+  return digits + checkDigit;
 }
 
 const now = new Date();

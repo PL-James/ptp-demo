@@ -31,7 +31,7 @@ export async function createOnClickShowBarcodeModal(instance: CrudFieldComponent
       instance._data = (await repository?.read(instance.modelId)) as Batch;
     }
     const batch = instance._data as Batch;
-    const inlineSvg = DatamatrixModalHandler.getDatamatrixCanvasElement(batch, BarcodeTypes.gs1datamatrix, 150);
+    const inlineSvg = DatamatrixModalHandler.getDatamatrixCanvasElement(batch, BarcodeTypes.datamatrix, 150);
     if (inlineSvg) {
       const labelText = await instance.translate('batch.dataMatrix.view');
       const wrapper = createBarcodeWrapper(inlineSvg, labelText);
@@ -76,11 +76,8 @@ export const BarcodeTypes = {
 export class DatamatrixModalHandler extends NgxEventHandler {
   private static readonly barcodeOptions = {
     text: '',
-    includeBarcodeText: true,
+    parsefnc: true,
     scale: 4,
-    height: 16,
-    textxalign: 'center',
-    textyalign: 'center',
     backgroundcolor: 'ffffff',
     paddingwidth: 4,
     paddingheight: 4,
@@ -125,12 +122,13 @@ export class DatamatrixModalHandler extends NgxEventHandler {
 
   static getBarcodeData(batch: Batch): string {
     const { batchNumber, productCode, expiryDate } = batch;
-
-    return `(01)${productCode}(10)${batchNumber}(17)${expiryDate}`;
+    // FNC1 as symbology identifier, then AIs with data
+    // FNC1 separator required after variable-length AI 10 (batch) before AI 17
+    return `^FNC101${productCode}10${batchNumber}^FNC117${expiryDate}`;
   }
 
   static getProductBarcodeData(product: Product): string {
-    return `(01)${product.productCode}`;
+    return `^FNC101${product.productCode}`;
   }
 
   static getProductDatamatrixCanvasElement(
@@ -138,12 +136,12 @@ export class DatamatrixModalHandler extends NgxEventHandler {
     size: number = 280
   ): HTMLElement | undefined {
     const barcodeData = this.getProductBarcodeData(product);
-    return this.renderBarcodeToContainer(barcodeData, BarcodeTypes.gs1datamatrix, size);
+    return this.renderBarcodeToContainer(barcodeData, BarcodeTypes.datamatrix, size);
   }
 
   static getDatamatrixCanvasElement(
     batch: Batch,
-    bcid: keyof typeof BarcodeTypes = BarcodeTypes.gs1datamatrix,
+    bcid: keyof typeof BarcodeTypes = BarcodeTypes.datamatrix,
     size: number = 280
   ): HTMLElement | undefined {
     const barcodeData = this.getBarcodeData(batch);
